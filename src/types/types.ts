@@ -42,3 +42,6 @@ export type Comment = {
     createAt:Data
     video:video
 }
+
+export  type RegisterForm  = Omit<User, 'id' | 'role'>;
+export type LoginForm = Omit<User, 'id'| 'role' | 'age'  >;
