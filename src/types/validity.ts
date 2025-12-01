@@ -12,7 +12,6 @@ export interface BrowserValidity {
   valueMissing: boolean;
 }
 
-// HTML-атрибуты валидации 
 export interface InputConstraints {
   required?: boolean | "";
   min?: string | number;
