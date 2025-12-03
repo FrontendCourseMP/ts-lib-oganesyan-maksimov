@@ -26,9 +26,16 @@ class Vadidition {
 class V {
     from: HTMLFormElement|null = null;
     constructor(element: HTMLFormElement) {
-        form = new FormConnector(element)
+        this.form = new FormConnector(element)
     }
     validate() {
 
     }
+    field(fieldName: string) {
+    const element = this.form.getField.elements.namedItem(fieldName);
+        if (!element) {
+        throw new Error(`Поле с name="${fieldName}" не найдено в форме`);
+    }
+    return element as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+}
 }
