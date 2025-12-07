@@ -68,10 +68,9 @@ export function initDemo() {
             const result = validator.validate();
             
             if (result.isValid) {
-                console.log('Форма валидна!', result);
                 form.submit();
             } else {
-                console.log('Ошибки валидации:', result.errors);
+                //
             }
         });
         
@@ -96,40 +95,46 @@ function setupFieldValidation(validator: ValidatorInstance, fieldName: string, e
         const [ruleName, ...params] = rule.split(':').map(p => p.trim());
         
         switch (ruleName) {
-            case 'required':
+            case 'required': {
                 const requiredMsg = params[0] || 'Поле обязательно';
                 field.required(requiredMsg);
                 break;
+            }
                 
-            case 'email':
+            case 'email': {
                 const emailMsg = params[0] || 'Некорректный email';
                 field.email(emailMsg);
                 break;
+            }
                 
-            case 'min':
-                const minValue = parseInt(params[0]);
+            case 'min': {
+                const minValue = parseInt(params[0], 10);
                 const minMsg = params[1] || `Минимум ${minValue} символов`;
                 if (!isNaN(minValue)) field.min(minValue, minMsg);
                 break;
+            }
                 
-            case 'max':
-                const maxValue = parseInt(params[0]);
+            case 'max': {
+                const maxValue = parseInt(params[0], 10);
                 const maxMsg = params[1] || `Максимум ${maxValue} символов`;
                 if (!isNaN(maxValue)) field.max(maxValue, maxMsg);
                 break;
+            }
                 
-            case 'number':
+            case 'number': {
                 const numberMsg = params[0] || 'Должно быть числом';
                 field.number(numberMsg);
                 break;
+            }
                 
-            case 'pattern':
+            case 'pattern': {
                 if (params[0]) {
                     const pattern = new RegExp(params[0]);
                     const patternMsg = params[1] || 'Неверный формат';
                     field.pattern(pattern, patternMsg);
                 }
                 break;
+            }
         }
     });
 }

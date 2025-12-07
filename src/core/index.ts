@@ -1,6 +1,6 @@
 import { Validator } from './validator';
 import { FormConnector } from './form-connector';
-import type { ValidationResult, FieldOptions } from '../types/index.ts';
+import type { ValidationResult, FieldOptions } from '../types/index';
 
 class V {
     private form: FormConnector;
@@ -28,7 +28,6 @@ class V {
                 element, 
                 this.form.getFormElement(), 
                 fieldName,
-                this.options
             ));
         }
         
@@ -127,5 +126,5 @@ class V {
 export default V;
 
 export const createValidator = (form: HTMLFormElement, options?: FieldOptions) => {
-    return V.form(form, options);
+    V.form(form, options);
 };

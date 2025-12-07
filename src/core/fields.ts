@@ -156,24 +156,38 @@ class Validator {
     private checkRule(rule: ValidationRule): string | null {
         switch (rule.type) {
             case 'isString':
+            {
                 return typeof this.value !== 'string' ? rule.error : null;
+            }
                 
             case 'required':
+            {
                 if (this.value === null || this.value === undefined || this.value === '' || 
                     (Array.isArray(this.value) && this.value.length === 0)) {
                     return rule.error;
                 }
                 return null;
+            }
+
                 
             case 'min':
+            {
                 return typeof this.value === 'string' && this.value.length < rule.value ? rule.error : null;
+            }
+
                 
             case 'max':
+            {
                 return typeof this.value === 'string' && this.value.length > rule.value ? rule.error : null;
+            }
+
                 
             case 'email':
+            {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return typeof this.value === 'string' && !emailRegex.test(this.value) ? rule.error : null;
+            }
+
                 
             case 'isNumber':
                 return typeof this.value !== 'number' || isNaN(this.value) ? rule.error : null;
@@ -193,8 +207,16 @@ class Validator {
             case 'maxLength':
                 return Array.isArray(this.value) && this.value.length > rule.value ? rule.error : null;
                 
-            case 'confirm':
-                return null;
+            case 'confirm': {
+                const form = this.element.closest('form');
+                if (!form) return rule.error;
+                
+                const confirmField = form.querySelector(`[name="${rule.value}"]`) as HTMLInputElement;
+                if (!confirmField) return rule.error;
+                
+                const confirmValue = confirmField.value;
+                return this.value !== confirmValue ? rule.error : null;
+            }
                 
             default:
                 return null;

@@ -1,7 +1,6 @@
 import  type { 
     ValidationRule, 
     ValidatorConfig,
-    FieldOptions 
 } from '../types/index.ts';
 
 export class Validator {
@@ -10,7 +9,7 @@ export class Validator {
     private value: any;
     private form: HTMLFormElement;
 
-    constructor(element: HTMLElement, form: HTMLFormElement, fieldName: string, options?: FieldOptions) {
+    constructor(element: HTMLElement, form: HTMLFormElement, fieldName: string,) {
         this.element = element;
         this.form = form;
         
@@ -19,7 +18,7 @@ export class Validator {
             fieldName,
             element
         };
-        
+
         this.value = this.getValue();
         this.loadConstraintValidation();
     }
@@ -201,9 +200,9 @@ export class Validator {
 
     phone(country: 'ru' | 'us' | 'eu' | 'any' = 'ru', error?: string) {
         const patterns = {
-            ru: /^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/,
-            us: /^(\+1)?[\s\-]?\(?[2-9][0-8][0-9]\)?[\s\-]?[2-9][0-9]{2}[\s\-]?[0-9]{4}$/,
-            eu: /^(\+[1-9]{1,3})?[\s\-]?\(?[0-9]{1,4}\)?[\s\-]?[0-9]{1,15}$/,
+            ru: /^(\+7|7|8)?[s-]?\(?[489][0-9]{2}\)?[\s-]?[0-9]{3}[\s-]?[0-9]{2}[\s-]?[0-9]{2}$/,
+            us: /^(\+1)?[\s-]?\(?[2-9][0-8][0-9]\)?[\s-]?[2-9][0-9]{2}[\s-]?[0-9]{4}$/,
+            eu: /^(\+[1-9]{1,3})?[s-]?\(?[0-9]{1,4}\)?[\s-]?[0-9]{1,15}$/,
             any: /^\+?[1-9][0-9]{7,14}$/
         };
 
@@ -221,7 +220,7 @@ export class Validator {
     }
 
     url(error: string = 'Введите корректный URL') {
-        const urlPattern = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]{2,}(\/.*)?$/;
+        const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)?$/;
         return this.pattern(urlPattern, error);
     }
 
@@ -399,7 +398,7 @@ export class Validator {
             case 'isString':
                 return typeof this.value !== 'string' ? rule.error : null;
                 
-            case 'required':
+            case 'required':{
                 if (this.value === null || this.value === undefined || this.value === '' || 
                     (Array.isArray(this.value) && this.value.length === 0) ||
                     (typeof this.value === 'boolean' && !this.value) ||
@@ -407,52 +406,77 @@ export class Validator {
                     return rule.error;
                 }
                 return null;
+            }
+
                 
-            case 'min':
+            case 'min':{
                 return typeof this.value === 'string' && this.value.length < rule.value ? rule.error : null;
-                
+            }    
             case 'max':
+            {
                 return typeof this.value === 'string' && this.value.length > rule.value ? rule.error : null;
+            }
                 
             case 'email':
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return typeof this.value === 'string' && !emailRegex.test(this.value) ? rule.error : null;
-                
+            {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return typeof this.value === 'string' && !emailRegex.test(this.value) ? rule.error : null;
+            }
+
             case 'isNumber':
+            {
                 return (typeof this.value !== 'number' || isNaN(this.value)) && 
                        (typeof this.value !== 'string' || isNaN(parseFloat(this.value))) ? rule.error : null;
+            }
+
                 
             case 'minNumber':
+            {
                 const numValMin = typeof this.value === 'string' ? parseFloat(this.value) : this.value;
                 return typeof numValMin === 'number' && !isNaN(numValMin) && numValMin < rule.value ? rule.error : null;
-                
+            }
             case 'maxNumber':
+            {
                 const numValMax = typeof this.value === 'string' ? parseFloat(this.value) : this.value;
                 return typeof numValMax === 'number' && !isNaN(numValMax) && numValMax > rule.value ? rule.error : null;
-                
+            }
+
             case 'pattern':
+            {
                 return typeof this.value === 'string' && !rule.value.test(this.value) ? rule.error : null;
-                
+            }
+  
             case 'isArray':
+            {
                 return !Array.isArray(this.value) ? rule.error : null;
+            }
                 
             case 'minLength':
+            {
                 return Array.isArray(this.value) && this.value.length < rule.value ? rule.error : null;
-                
+            }
+ 
             case 'maxLength':
+            {
                 return Array.isArray(this.value) && this.value.length > rule.value ? rule.error : null;
-                
+            }
             case 'confirm':
+            {
                 const confirmField = this.form.querySelector(`[name="${rule.value}"]`) as HTMLInputElement;
                 if (confirmField) {
                     return confirmField.value !== this.value ? rule.error : null;
                 }
                 return null;
+            }
+
                 
             case 'custom':
+            {
                 const result = rule.value(this.value);
                 if (typeof result === 'string') return result;
                 return result === false ? rule.error : null;
+            }
+
                 
             default:
                 return null;
