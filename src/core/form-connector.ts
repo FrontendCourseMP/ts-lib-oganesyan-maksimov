@@ -21,11 +21,11 @@ export class FormConnector {
         this.inputElements.clear();
         
         this.formElement.querySelectorAll<HTMLElement>('[field-name]').forEach(element => {
-            const fieldName = element.getAttribute('field-name');
-            if (fieldName) {
-                this.inputElements.set(fieldName, element);
-            }
-        });
+        const fieldName = element.getAttribute('field-name');
+        if (fieldName) {
+            this.inputElements.set(fieldName, element);
+        }
+    });
         
         const formElements = [
             'input:not([type="submit"]):not([type="button"]):not([type="reset"])',
@@ -35,15 +35,17 @@ export class FormConnector {
         ].join(', ');
         
         this.formElement.querySelectorAll<HTMLElement>(formElements).forEach(element => {
-            const name = element.getAttribute('name');
-            const id = element.getAttribute('id');
-            
-            if (name && !this.inputElements.has(name)) {
-                this.inputElements.set(name, element);
-            } else if (id && !this.inputElements.has(id)) {
-                this.inputElements.set(id, element);
-            }
-        });
+        if (element.hasAttribute('field-name')) return;
+
+        const name = element.getAttribute('name');
+        const id = element.getAttribute('id');
+        
+        if (name && !this.inputElements.has(name)) {
+            this.inputElements.set(name, element);
+        } else if (id && !this.inputElements.has(id)) {
+            this.inputElements.set(id, element);
+        }
+    });
     }
 
     private collectLabelsAndErrorContainers() {
@@ -105,7 +107,15 @@ export class FormConnector {
     }
 
     getErrorContainer(fieldName: string): HTMLElement | null {
-        return this.errorContainers.get(fieldName) || null;
+        const container = this.errorContainers.get(fieldName);
+        if (container) return container;
+
+        if (this.options.errorContainer && this.options.errorContainer.startsWith('#')) {
+            const global = document.querySelector(this.options.errorContainer);
+            return global as HTMLElement | null;
+        }
+
+        return null;
     }
 
     getFields(): Map<string, HTMLElement> {

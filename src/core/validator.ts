@@ -1,15 +1,15 @@
-import  type { 
-    ValidationRule, 
-    ValidatorConfig,
-} from '../types/index.ts';
+import type { ValidationRule, ValidatorConfig } from '../types/index';
+
+type FieldValue = string | number | boolean | FileList | null | undefined;
+type CustomValidator = (value: string) => boolean | string;
 
 export class Validator {
     private element: HTMLElement;
     private config: ValidatorConfig;
-    private value: any;
+    private value: FieldValue;
     private form: HTMLFormElement;
 
-    constructor(element: HTMLElement, form: HTMLFormElement, fieldName: string,) {
+    constructor(element: HTMLElement, form: HTMLFormElement, fieldName: string) {
         this.element = element;
         this.form = form;
         
@@ -23,7 +23,7 @@ export class Validator {
         this.loadConstraintValidation();
     }
 
-    private getValue(): any {
+    private getValue(): FieldValue {
         if (this.element instanceof HTMLInputElement) {
             if (this.element.type === 'checkbox') {
                 return this.element.checked;
@@ -284,7 +284,7 @@ export class Validator {
             v4: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
             v6: /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/,
             any: null
-        };
+        } as const;
 
         const defaultErrors = {
             v4: 'Введите IPv4 адрес',
@@ -293,14 +293,14 @@ export class Validator {
         };
 
         if (version === 'any') {
-            return this.custom((value) => {
-                const v4Pattern = patterns.v4;
-                const v6Pattern = patterns.v6;
+            return this.custom((value: string) => {
+                const v4Pattern = patterns.v4!;
+                const v6Pattern = patterns.v6!;
                 return v4Pattern.test(value) || v6Pattern.test(value);
             }, error || defaultErrors.any);
         }
 
-        return this.pattern(patterns[version], error || defaultErrors[version]);
+        return this.pattern(patterns[version]!, error || defaultErrors[version]);
     }
 
     inn(error: string = 'Введите корректный ИНН') {
@@ -314,8 +314,7 @@ export class Validator {
     }
 
     passwordStrong(minLength: number = 8, error?: string) {
-        return this.custom((value) => {
-            if (typeof value !== 'string') return false;
+        return this.custom((value: string) => {
             if (value.length < minLength) return false;
             
             const hasUpperCase = /[A-Z]/.test(value);
@@ -362,7 +361,7 @@ export class Validator {
         return this;
     }
 
-    custom(validator: (value: any) => boolean | string, error: string = 'Неверное значение') {
+    custom(validator: CustomValidator, error: string = 'Неверное значение') {
         this.config.rules.push({
             type: 'custom',
             value: validator,
@@ -398,7 +397,7 @@ export class Validator {
             case 'isString':
                 return typeof this.value !== 'string' ? rule.error : null;
                 
-            case 'required':{
+            case 'required': {
                 if (this.value === null || this.value === undefined || this.value === '' || 
                     (Array.isArray(this.value) && this.value.length === 0) ||
                     (typeof this.value === 'boolean' && !this.value) ||
@@ -407,76 +406,76 @@ export class Validator {
                 }
                 return null;
             }
-
                 
-            case 'min':{
-                return typeof this.value === 'string' && this.value.length < rule.value ? rule.error : null;
-            }    
-            case 'max':
-            {
-                return typeof this.value === 'string' && this.value.length > rule.value ? rule.error : null;
+            case 'min': {
+                const minValue = rule.value as number;
+                return typeof this.value === 'string' && this.value.length < minValue ? rule.error : null;
             }
                 
-            case 'email':
-            {
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    return typeof this.value === 'string' && !emailRegex.test(this.value) ? rule.error : null;
+            case 'max': {
+                const maxValue = rule.value as number;
+                return typeof this.value === 'string' && this.value.length > maxValue ? rule.error : null;
+            }
+                
+            case 'email': {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return typeof this.value === 'string' && !emailRegex.test(this.value) ? rule.error : null;
             }
 
-            case 'isNumber':
-            {
+            case 'isNumber': {
                 return (typeof this.value !== 'number' || isNaN(this.value)) && 
                        (typeof this.value !== 'string' || isNaN(parseFloat(this.value))) ? rule.error : null;
             }
-
                 
-            case 'minNumber':
-            {
+            case 'minNumber': {
+                const minNumValue = rule.value as number;
                 const numValMin = typeof this.value === 'string' ? parseFloat(this.value) : this.value;
-                return typeof numValMin === 'number' && !isNaN(numValMin) && numValMin < rule.value ? rule.error : null;
+                return typeof numValMin === 'number' && !isNaN(numValMin) && numValMin < minNumValue ? rule.error : null;
             }
-            case 'maxNumber':
-            {
+                
+            case 'maxNumber': {
+                const maxNumValue = rule.value as number;
                 const numValMax = typeof this.value === 'string' ? parseFloat(this.value) : this.value;
-                return typeof numValMax === 'number' && !isNaN(numValMax) && numValMax > rule.value ? rule.error : null;
+                return typeof numValMax === 'number' && !isNaN(numValMax) && numValMax > maxNumValue ? rule.error : null;
             }
 
-            case 'pattern':
-            {
-                return typeof this.value === 'string' && !rule.value.test(this.value) ? rule.error : null;
+            case 'pattern': {
+                const pattern = rule.value as RegExp;
+                return typeof this.value === 'string' && !pattern.test(this.value) ? rule.error : null;
             }
   
-            case 'isArray':
-            {
+            case 'isArray': {
                 return !Array.isArray(this.value) ? rule.error : null;
             }
                 
-            case 'minLength':
-            {
-                return Array.isArray(this.value) && this.value.length < rule.value ? rule.error : null;
+            case 'minLength': {
+                const minLengthValue = rule.value as number;
+                return Array.isArray(this.value) && this.value.length < minLengthValue ? rule.error : null;
             }
  
-            case 'maxLength':
-            {
-                return Array.isArray(this.value) && this.value.length > rule.value ? rule.error : null;
+            case 'maxLength': {
+                const maxLengthValue = rule.value as number;
+                return Array.isArray(this.value) && this.value.length > maxLengthValue ? rule.error : null;
             }
-            case 'confirm':
-            {
-                const confirmField = this.form.querySelector(`[name="${rule.value}"]`) as HTMLInputElement;
+                
+            case 'confirm': {
+                const confirmFieldName = rule.value as string;
+                const confirmField = this.form.querySelector(`[name="${confirmFieldName}"]`) as HTMLInputElement;
                 if (confirmField) {
                     return confirmField.value !== this.value ? rule.error : null;
                 }
                 return null;
             }
-
                 
-            case 'custom':
-            {
-                const result = rule.value(this.value);
+            case 'custom': {
+                const customValidator = rule.value as CustomValidator;
+                if (typeof this.value !== 'string') {
+                    return rule.error;
+                }
+                const result = customValidator(this.value);
                 if (typeof result === 'string') return result;
                 return result === false ? rule.error : null;
             }
-
                 
             default:
                 return null;
