@@ -9,17 +9,24 @@ import type {
 type ValidatorInstance = InstanceType<typeof V>;
 
 export { V, createValidator };
-export type { 
-    ValidationRule, 
-    ValidatorConfig, 
+export type {
+    ValidationRule,
+    ValidatorConfig,
     ValidationResult,
     FieldOptions,
-    ValidatorInstance 
+    ValidatorInstance
 };
 
+declare global {
+    interface Window {
+        V: typeof V;
+        createValidator: typeof createValidator;
+    }
+}
+
 if (typeof window !== 'undefined') {
-    (window as any).V = V;
-    (window as any).createValidator = createValidator;
+    window.V = V;
+    window.createValidator = createValidator;
 }
 
 export function useValidator(form: HTMLFormElement, options?: FieldOptions) {

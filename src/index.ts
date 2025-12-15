@@ -1,8 +1,6 @@
 import VDefault, * as CoreModule from './core';
-
 import { Validator } from './core/validator';
 import { FormConnector } from './core/form-connector';
-
 import type { 
     ValidationRule, 
     ValidatorConfig, 
@@ -11,7 +9,7 @@ import type {
 } from './types';
 
 export const V = VDefault;
-export const createValidator = (CoreModule as any).createValidator;
+export const createValidator = (CoreModule as { createValidator: typeof CoreModule.createValidator }).createValidator;
 
 export type { 
     ValidationRule, 
@@ -28,11 +26,11 @@ export default V;
 
 export const utils = {
     isValidEmail: (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
-    isNumber: (value: any): boolean => typeof value === 'number' && !isNaN(value),
-    isString: (value: any): boolean => typeof value === 'string',
-    isArray: (value: any): boolean => Array.isArray(value),
-    isObject: (value: any): boolean => typeof value === 'object' && value !== null && !Array.isArray(value),
-    isEmpty: (value: any): boolean => {
+    isNumber: (value: unknown): boolean => typeof value === 'number' && !isNaN(value),
+    isString: (value: unknown): boolean => typeof value === 'string',
+    isArray: (value: unknown): boolean => Array.isArray(value),
+    isObject: (value: unknown): boolean => typeof value === 'object' && value !== null && !Array.isArray(value),
+    isEmpty: (value: unknown): boolean => {
         if (value === null || value === undefined) return true;
         if (typeof value === 'string') return value.trim() === '';
         if (Array.isArray(value)) return value.length === 0;
@@ -83,9 +81,18 @@ export const constants = {
     }
 };
 
+declare global {
+    interface Window {
+        V: typeof V;
+        createValidator: typeof createValidator;
+        Validator: typeof Validator;
+        FormConnector: typeof FormConnector;
+    }
+}
+
 if (typeof window !== 'undefined') {
-    (window as any).V = V;
-    (window as any).createValidator = createValidator;
-    (window as any).Validator = Validator;
-    (window as any).FormConnector = FormConnector;
+    window.V = V;
+    window.createValidator = createValidator;
+    window.Validator = Validator;
+    window.FormConnector = FormConnector;
 }

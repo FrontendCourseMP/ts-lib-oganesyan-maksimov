@@ -1,6 +1,6 @@
 export type ValidationRule = {
     type: string;
-    value?: any;
+    value?: string | number | boolean | RegExp | ((value: string) => boolean | string);
     error: string;
 };
 
